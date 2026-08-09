@@ -11,21 +11,20 @@ from starlette.responses import JSONResponse
 from tools.diagnosis import (
     diagnose_plant_disease,
     diagnose_plant_by_image,
-    # identify_plant_by_image,  # 임시 비활성화 (Tool 개수 축소 테스트)
+    identify_plant_by_image,
 )
 from tools.design import (
     recommend_plants,
-    # design_garden_layout,  # 임시 비활성화 (Tool 개수 축소 테스트)
+    design_garden_layout,
     get_plant_care_guide,
-    # get_seasonal_tips,  # 임시 비활성화 (Tool 개수 축소 테스트)
+    get_seasonal_tips,
 )
-# from tools.schedule import (
-#     create_garden_schedule,
-#     send_garden_reminder,
-# )  # 임시 비활성화 (Tool 개수 축소 테스트)
-from tools.pots import recommend_pot_size
-# from tools.pots import diagnose_pot_condition, manage_my_pots  # 임시 비활성화
-# from tools.materials import search_garden_materials  # 임시 비활성화
+from tools.schedule import (
+    create_garden_schedule,
+    send_garden_reminder,
+)
+from tools.pots import recommend_pot_size, diagnose_pot_condition, manage_my_pots
+from tools.materials import search_garden_materials
 
 # ── MCP 서버 인스턴스 ─────────────────────────────────────────────
 mcp = FastMCP(
@@ -52,17 +51,29 @@ async def health(request: Request) -> JSONResponse:
     return JSONResponse({"status": "ok"})
 
 
-# ── Tool 등록 (5개 — 배포 문제 진단을 위해 임시 축소, 원래는 13개) ──────
+# ── Tool 등록 (13개) ───────────────────────────────────────────────
+# 🔬 병해충 진단·식별 (3개)
 mcp.tool()(diagnose_plant_disease)
 mcp.tool()(diagnose_plant_by_image)
-mcp.tool()(recommend_plants)
-mcp.tool()(get_plant_care_guide)
-mcp.tool()(recommend_pot_size)
+mcp.tool()(identify_plant_by_image)
 
-# 나머지 8개는 아래 import를 되살리고 등록만 다시 추가하면 됩니다:
-# identify_plant_by_image, design_garden_layout, get_seasonal_tips,
-# create_garden_schedule, send_garden_reminder,
-# diagnose_pot_condition, manage_my_pots, search_garden_materials
+# 🌱 식물 추천·정원 설계·관리 가이드 (4개)
+mcp.tool()(recommend_plants)
+mcp.tool()(design_garden_layout)
+mcp.tool()(get_plant_care_guide)
+mcp.tool()(get_seasonal_tips)
+
+# 📅 관리 일정·알림 (2개, 카카오 연동)
+mcp.tool()(create_garden_schedule)
+mcp.tool()(send_garden_reminder)
+
+# 🪴 화분 관리 (3개)
+mcp.tool()(recommend_pot_size)
+mcp.tool()(diagnose_pot_condition)
+mcp.tool()(manage_my_pots)
+
+# 🧰 원예 자재 안내 (1개)
+mcp.tool()(search_garden_materials)
 
 # ── ASGI app (uvicorn main:app 으로 실행) ─────────────────────────
 app = mcp.streamable_http_app()
