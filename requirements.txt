@@ -1,7 +1,8 @@
 # 그린핑거 MCP 서버 의존성 패키지
 
 # MCP 프레임워크 (Anthropic 공식)
-mcp[cli]>=1.6.0
+# mcp 2.0.0부터 mcp.server.fastmcp 모듈이 제거/재구성되어 <2.0.0으로 고정
+mcp[cli]>=1.6.0,<2.0.0
 
 # AI 진단·설계 (Claude API)
 anthropic>=0.49.0
