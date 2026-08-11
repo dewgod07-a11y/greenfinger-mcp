@@ -15,6 +15,7 @@ from datetime import datetime
 from anthropic import AsyncAnthropic
 from config.settings import settings
 from data.plant_db import PLANT_DB, SEASONAL_TASKS
+from utils.rate_limit import check_ai_rate_limit
 
 anthropic_client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
@@ -98,6 +99,10 @@ async def design_garden_layout(
         budget_level:     예산 수준 (저예산/중간/고예산, 기본: 중간)
         preferred_style:  선호 스타일 (예: 미니멀, 정글룩, 텃밭형)
     """
+    limit_message = check_ai_rate_limit()
+    if limit_message:
+        return {"error": limit_message}
+
     style_line = f"선호 스타일: {preferred_style}\n" if preferred_style else ""
     prompt = f"""
 당신은 홈가드닝·소규모 조경 설계 전문가입니다.

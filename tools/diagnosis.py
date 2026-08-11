@@ -13,6 +13,7 @@ import re
 from anthropic import AsyncAnthropic
 from config.settings import settings
 from data.plant_db import PLANT_DB
+from utils.rate_limit import check_ai_rate_limit
 
 anthropic_client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
@@ -47,6 +48,10 @@ async def diagnose_plant_disease(
         location:         발생 부위 (잎/줄기/뿌리/전체)
         care_environment: 재배 환경 (예: 베란다 서향, 실내 반양지)
     """
+    limit_message = check_ai_rate_limit()
+    if limit_message:
+        return {"error": limit_message}
+
     env_line = f"재배 환경: {care_environment}\n" if care_environment else ""
     prompt = f"""
 당신은 홈가드닝·생활 원예 전문가입니다.
@@ -110,6 +115,10 @@ async def diagnose_plant_by_image(
         plant_name: 식물명 (모를 경우 '모름' 입력)
         location:   촬영 위치 (예: 베란다, 옥상 텃밭)
     """
+    limit_message = check_ai_rate_limit()
+    if limit_message:
+        return {"error": limit_message, "image_url": image_url}
+
     prompt = f"""
 당신은 홈가드닝·생활 원예 전문가입니다.
 첨부된 식물 사진을 보고 병해충 또는 생리장해 여부를 진단하세요.
@@ -166,6 +175,10 @@ async def identify_plant_by_image(
     Args:
         image_url: 사용자가 제공한 식물 사진 URL (반드시 실제 URL이어야 함)
     """
+    limit_message = check_ai_rate_limit()
+    if limit_message:
+        return {"error": limit_message, "image_url": image_url}
+
     prompt = """
 당신은 식물 분류 전문가입니다. 첨부된 사진 속 식물 종을 식별하세요.
 

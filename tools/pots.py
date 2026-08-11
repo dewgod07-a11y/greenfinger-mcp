@@ -13,6 +13,7 @@ from datetime import datetime
 from anthropic import AsyncAnthropic
 from config.settings import settings
 from data.plant_db import PLANT_DB
+from utils.rate_limit import check_ai_rate_limit
 
 anthropic_client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
@@ -108,6 +109,10 @@ async def diagnose_pot_condition(
         symptoms:                 관찰된 화분 증상 (예: 배수구멍으로 뿌리가 삐져나옴, 물을 줘도 겉으로 바로 흘러내림)
         current_pot_diameter_cm:  현재 화분 지름(cm), 0이면 미입력
     """
+    limit_message = check_ai_rate_limit()
+    if limit_message:
+        return {"error": limit_message}
+
     info = PLANT_DB.get(plant_name)
     if info is None:
         matches = [n for n in PLANT_DB if plant_name in n or n in plant_name]
